@@ -1,0 +1,11 @@
+{
+	"welcome": "Welcome to Smart Insurance Application Portal",
+	"apply": "Apply for Insurance",
+	"viewSubmissions": "View Submissions",
+	"applyForInsurance": "Apply for Insurance",
+	"submissions": "Submissions",
+	"submit": "Submit",
+	"loading": "Loading...",
+	"submitSuccess": "Form submitted successfully!",
+	"submitError": "Error submitting form."
+}

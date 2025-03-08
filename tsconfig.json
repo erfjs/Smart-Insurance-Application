@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.node.tsbuildinfo",
+    "types": ["jest", "@testing-library/jest-dom"],
+    "strict": false,
+  },
+  "include": ["vite.config.ts"]
+}
