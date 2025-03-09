@@ -157,7 +157,12 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                   error={!!fieldState.error}
                   fullWidth
                   displayEmpty
-                  sx={{ mt: 2 }}
+                  sx={{
+                    mt: 2,
+                    "& legend span": {
+                      color: "purple", // تغییر رنگ `span` داخل `legend`
+                    },
+                  }}
                   onChange={(e) => controllerField.onChange(e.target.value)}
                   onOpen={() => setIsSelectOpen(true)}
                   onClose={() => setIsSelectOpen(false)}

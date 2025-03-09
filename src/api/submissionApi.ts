@@ -1,6 +1,6 @@
-import axios from 'axios';
+import { api } from './axios';
 
 export const fetchSubmissions = async () => {
-	const response = await axios.get('https://assignment.devotel.io/api/insurance/forms/submissions');
+	const response = await api.get('/insurance/forms/submissions');
 	return response.data;
 };
