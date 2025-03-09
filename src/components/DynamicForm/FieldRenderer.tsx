@@ -1,19 +1,18 @@
-import {
-  Box,
-  Checkbox,
-  FormControlLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Control, Controller, UseFormWatch } from "react-hook-form";
-
+import { Controller, Control, UseFormWatch } from "react-hook-form";
+import {
+  TextField,
+  Select,
+  MenuItem,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Checkbox,
+  Typography,
+  Box,
+} from "@mui/material";
 import { Field } from "./types";
+import axios from "axios";
 
 interface FieldRendererProps {
   field: Field;
@@ -35,6 +34,10 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   const dependsOnValue = dependsOnField ? watch(dependsOnField) : undefined;
 
   useEffect(() => {
+    setDynamicOptions([]);
+  }, [field.id]);
+
+  useEffect(() => {
     const fetchDynamicOptions = async () => {
       if (field.dynamicOptions && dependsOnField && dependsOnValue) {
         try {
@@ -42,26 +45,19 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             method: field.dynamicOptions.method || "GET",
             url: `${field.dynamicOptions.endpoint}?${dependsOnField}=${dependsOnValue}`,
           });
+          console.log(`گزینه‌های دریافت‌شده برای ${field.id}:`, response.data);
           setDynamicOptions(response.data.states || []);
         } catch (error) {
           console.error(`خطا در گرفتن گزینه‌ها برای ${field.id}:`, error);
           setDynamicOptions([]);
         }
-      } else {
-        setDynamicOptions([]);
       }
     };
 
     if (dependsOnValue && (isSelectOpen || dynamicOptions.length === 0)) {
       fetchDynamicOptions();
     }
-  }, [
-    dependsOnValue,
-    isSelectOpen,
-    dynamicOptions.length,
-    field,
-    dependsOnField,
-  ]);
+  }, [dependsOnValue, isSelectOpen, field]);
 
   if (field.visibility) {
     const visibilityDependsOnValue = field.visibility.dependsOn
@@ -85,7 +81,10 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             rules={{
               required: field.required ? "این فیلد الزامی است" : false,
               pattern: field.validation?.pattern
-                ? new RegExp(field.validation.pattern)
+                ? {
+                    value: new RegExp(field.validation.pattern),
+                    message: "فرمت اشتباه است",
+                  }
                 : undefined,
             }}
             render={({ field: controllerField, fieldState }) => (
@@ -107,8 +106,18 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             control={control}
             rules={{
               required: field.required ? "این فیلد الزامی است" : false,
-              min: field.validation?.min,
-              max: field.validation?.max,
+              min: field.validation?.min
+                ? {
+                    value: field.validation.min,
+                    message: `حداقل مقدار ${field.validation.min} است`,
+                  }
+                : undefined,
+              max: field.validation?.max
+                ? {
+                    value: field.validation.max,
+                    message: `حداکثر مقدار ${field.validation.max} است`,
+                  }
+                : undefined,
             }}
             render={({ field: controllerField, fieldState }) => (
               <TextField
@@ -157,19 +166,14 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                   error={!!fieldState.error}
                   fullWidth
                   displayEmpty
-                  sx={{
-                    mt: 2,
-                    "& legend span": {
-                      color: "purple", // تغییر رنگ `span` داخل `legend`
-                    },
-                  }}
+                  sx={{ mt: 2 }}
                   onChange={(e) => controllerField.onChange(e.target.value)}
                   onOpen={() => setIsSelectOpen(true)}
                   onClose={() => setIsSelectOpen(false)}
                 >
                   <MenuItem value='' disabled>
                     {field.dynamicOptions && !dynamicOptions.length
-                      ? "لطفاً اول کشور را انتخاب کنید"
+                      ? "لطفاً اول وابستگی را انتخاب کنید"
                       : field.label || "انتخاب کنید"}
                   </MenuItem>
                   {(field.dynamicOptions
@@ -202,27 +206,34 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             name={field.id}
             control={control}
             rules={{ required: field.required ? "این فیلد الزامی است" : false }}
-            render={({ field: controllerField }) => (
-              <RadioGroup
-                {...controllerField}
-                onChange={(e) => controllerField.onChange(e.target.value)}
-              >
-                <Typography>{field.label}</Typography>
-                {(field.options || []).map((option) => {
-                  const value =
-                    typeof option === "string" ? option : option.value;
-                  const label =
-                    typeof option === "string" ? option : option.label;
-                  return (
-                    <FormControlLabel
-                      key={value}
-                      value={value}
-                      control={<Radio />}
-                      label={label}
-                    />
-                  );
-                })}
-              </RadioGroup>
+            render={({ field: controllerField, fieldState }) => (
+              <Box>
+                <RadioGroup
+                  {...controllerField}
+                  onChange={(e) => controllerField.onChange(e.target.value)}
+                >
+                  <Typography>{field.label}</Typography>
+                  {(field.options || []).map((option) => {
+                    const value =
+                      typeof option === "string" ? option : option.value;
+                    const label =
+                      typeof option === "string" ? option : option.label;
+                    return (
+                      <FormControlLabel
+                        key={value}
+                        value={value}
+                        control={<Radio />}
+                        label={label}
+                      />
+                    );
+                  })}
+                </RadioGroup>
+                {fieldState.error && (
+                  <Typography color='error' variant='caption'>
+                    {fieldState.error.message}
+                  </Typography>
+                )}
+              </Box>
             )}
           />
         );
@@ -231,9 +242,15 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
           <Controller
             name={field.id}
             control={control}
-            defaultValue={[]} // مقدار پیش‌فرض خالی برای چک‌باکس‌ها
-            rules={{ required: field.required ? "این فیلد الزامی است" : false }}
-            render={({ field: controllerField }) => (
+            defaultValue={[]}
+            rules={{
+              validate: field.required
+                ? (value) =>
+                    (Array.isArray(value) && value.length > 0) ||
+                    "حداقل یک گزینه را انتخاب کنید"
+                : undefined,
+            }}
+            render={({ field: controllerField, fieldState }) => (
               <Box>
                 <Typography>{field.label}</Typography>
                 {(field.options || []).map((option) => {
@@ -248,14 +265,14 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                         <Checkbox
                           checked={(controllerField.value || []).includes(
                             value
-                          )} // چک می‌کنیم که آیا این گزینه انتخاب شده است یا نه
+                          )}
                           onChange={(e) => {
-                            const newValue = controllerField.value || []; // اگر هیچ مقداری وجود نداشته باشد، آرایه خالی قرار می‌دهیم
+                            const newValue = controllerField.value || [];
                             if (e.target.checked) {
-                              controllerField.onChange([...newValue, value]); // اگر چک‌باکس تیک خورده است، آن را به آرایه اضافه می‌کنیم
+                              controllerField.onChange([...newValue, value]);
                             } else {
                               controllerField.onChange(
-                                newValue.filter((v: string) => v !== value) // در غیر این صورت از آرایه حذف می‌کنیم
+                                newValue.filter((v: string) => v !== value)
                               );
                             }
                           }}
@@ -265,11 +282,15 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                     />
                   );
                 })}
+                {fieldState.error && (
+                  <Typography color='error' variant='caption'>
+                    {fieldState.error.message}
+                  </Typography>
+                )}
               </Box>
             )}
           />
         );
-
       case "group":
         return (
           <Box sx={{ mb: 2, p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
