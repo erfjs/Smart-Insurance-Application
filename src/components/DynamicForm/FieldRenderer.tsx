@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { Controller, Control, UseFormWatch } from "react-hook-form";
 import {
-  TextField,
-  Select,
-  MenuItem,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Checkbox,
-  Typography,
   Box,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+  TextField,
+  Typography,
 } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Control, Controller, UseFormWatch } from "react-hook-form";
+
+import { api } from "../../api/axios";
 import { Field } from "./types";
-import axios from "axios";
 
 interface FieldRendererProps {
   field: Field;
@@ -41,7 +42,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     const fetchDynamicOptions = async () => {
       if (field.dynamicOptions && dependsOnField && dependsOnValue) {
         try {
-          const response = await axios({
+          const response = await api({
             method: field.dynamicOptions.method || "GET",
             url: `${field.dynamicOptions.endpoint}?${dependsOnField}=${dependsOnValue}`,
           });

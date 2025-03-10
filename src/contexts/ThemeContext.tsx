@@ -2,7 +2,7 @@ import {
   ThemeProvider as MuiThemeProvider,
   createTheme,
 } from "@mui/material/styles";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface ThemeContextType {
   theme: string;
@@ -14,7 +14,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState<string>(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme || "light";
+  });
+
+  // ذخیره تم توی localStorage وقتی تغییر می‌کنه
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const muiTheme = createTheme({
     palette: {
