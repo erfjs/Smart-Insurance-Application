@@ -5,19 +5,24 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  SelectChangeEvent,
   Typography,
-  SelectChangeEvent, // تایپ جدید
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { fetchFormStructure, submitForm } from "../api/formApi";
 import DynamicForm from "../components/DynamicForm/DynamicForm";
 import { FormList, FormStructure } from "../components/DynamicForm/types";
 
+interface FormData {
+  [key: string]: any;
+}
+
 const FormPage: React.FC = () => {
-  const { control, handleSubmit, watch, reset, setValue } = useForm({
+  const { control, handleSubmit, watch, reset, setValue } = useForm<FormData>({
     mode: "onChange",
+    defaultValues: {},
   });
   const [forms, setForms] = useState<FormList>([]);
   const [selectedForm, setSelectedForm] = useState<FormStructure | null>(null);
@@ -34,7 +39,7 @@ const FormPage: React.FC = () => {
         }
         console.log("فرم‌های دریافت‌شده:", formList);
         setForms(formList);
-        setSelectedForm(formList[0]);
+        setSelectedForm(formList[0]); // فرم پیش‌فرض
       } catch (err) {
         setError("خطا در بارگذاری فرم‌ها");
         console.error(err);
@@ -43,44 +48,104 @@ const FormPage: React.FC = () => {
     loadForms();
   }, []);
 
-  // لود دیتای ذخیره‌شده از localStorage
+  // تنظیم defaultValues و لود دیتای ذخیره‌شده از localStorage
   useEffect(() => {
     if (selectedForm) {
+      const defaultValues: FormData = {};
+      const setDefaultValues = (fields: FormStructure["fields"]) => {
+        fields.forEach((field) => {
+          if (field.type === "group") {
+            setDefaultValues(field.fields || []);
+          } else {
+            defaultValues[field.id] = field.type === "checkbox" ? [] : "";
+          }
+        });
+      };
+      setDefaultValues(selectedForm.fields);
+
+      // لود دیتای ذخیره‌شده از localStorage
       const savedData = localStorage.getItem(
         `formDraft_${selectedForm.formId}`
       );
+      let formData = { ...defaultValues };
       if (savedData) {
         const parsedData = JSON.parse(savedData);
+        formData = {
+          ...defaultValues,
+          ...parsedData, // دیتای ذخیره‌شده رو با defaultValues ادغام می‌کنیم
+        };
         Object.keys(parsedData).forEach((key) => {
-          setValue(key, parsedData[key], { shouldDirty: true });
+          if (Object.prototype.hasOwnProperty.call(defaultValues, key)) {
+            setValue(key, parsedData[key], { shouldDirty: true });
+          }
         });
       }
+      reset(formData); // فرم رو با دیتای ادغام‌شده ریست می‌کنیم
     }
-  }, [selectedForm, setValue]);
+  }, [selectedForm, setValue, reset]);
 
   // ذخیره real-time تغییرات توی localStorage
   useEffect(() => {
     const subscription = watch((data, { name }) => {
       if (selectedForm && name) {
         const currentData = watch();
+        const filteredData = Object.fromEntries(
+          Object.entries(currentData).filter(([key]) =>
+            selectedForm.fields.some(
+              (field) =>
+                field.id === key ||
+                (field.type === "group" &&
+                  field.fields?.some((subField) => subField.id === key))
+            )
+          )
+        );
         localStorage.setItem(
           `formDraft_${selectedForm.formId}`,
-          JSON.stringify(currentData)
+          JSON.stringify(filteredData)
         );
-        console.log(`ذخیره‌شده برای ${selectedForm.formId}:`, currentData);
+        console.log(`ذخیره‌شده برای ${selectedForm.formId}:`, filteredData);
       }
     });
     return () => subscription.unsubscribe();
   }, [watch, selectedForm]);
 
-  const onSubmit = async (data: any) => {
-    try {
-      await submitForm(data);
-      alert(t("submitSuccess"));
-      localStorage.removeItem(`formDraft_${selectedForm?.formId}`);
-      reset({
-        ...Object.keys(data).reduce((acc, key) => ({ ...acc, [key]: "" }), {}),
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    if (!selectedForm) {
+      console.error("هیچ فرمی انتخاب نشده");
+      return;
+    }
+
+    // فقط فیلدهای فرم انتخاب‌شده رو نگه می‌داریم
+    const allowedFields = new Set<string>();
+    const collectFields = (fields: FormStructure["fields"]) => {
+      fields.forEach((field) => {
+        if (field.type === "group") {
+          collectFields(field.fields || []);
+        } else {
+          allowedFields.add(field.id);
+        }
       });
+    };
+    collectFields(selectedForm.fields);
+
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key]) => allowedFields.has(key))
+    );
+
+    console.log("دیتای ارسال‌شده به سرور:", filteredData);
+
+    try {
+      await submitForm(filteredData);
+      alert(t("submitSuccess"));
+      localStorage.removeItem(`formDraft_${selectedForm.formId}`);
+      reset(
+        Object.fromEntries(
+          Object.keys(filteredData).map((key) => [
+            key,
+            Array.isArray(filteredData[key]) ? [] : "",
+          ])
+        )
+      );
     } catch (err) {
       console.error("خطا در ارسال فرم:", err);
       alert(t("submitError"));

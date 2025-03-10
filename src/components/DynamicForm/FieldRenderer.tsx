@@ -58,7 +58,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     if (dependsOnValue && (isSelectOpen || dynamicOptions.length === 0)) {
       fetchDynamicOptions();
     }
-  }, [dependsOnValue, isSelectOpen, field]);
+  }, [dependsOnValue, isSelectOpen, field, dynamicOptions.length, dependsOnField]);
 
   if (field.visibility) {
     const visibilityDependsOnValue = field.visibility.dependsOn
