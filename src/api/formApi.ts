@@ -1,15 +1,21 @@
 import { api } from "./axios";
 
 export const fetchFormStructure = async () => {
-	const response = await api.get("/api/insurance/forms", { headers: { "Content-Type": "application/json" }, });
-	return response.data;
+	try {
+		const response = await api.get("/api/insurance/forms");
+		return response.data;
+	} catch (error) {
+		throw new Error("خطا در گرفتن ساختار فرم: " + error.message);
+	}
 };
 
 export const submitForm = async (data: any) => {
-	const response = await api.post("/api/insurance/forms/submit", {
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(data),
-	});
-
-	return response.data;
+	try {
+		const response = await api.post("/api/insurance/forms/submit", data, {
+			headers: { "Content-Type": "application/json" },
+		});
+		return response.data;
+	} catch (error) {
+		throw new Error("خطا در ارسال فرم: " + error.message);
+	}
 };
