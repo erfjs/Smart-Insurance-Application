@@ -200,16 +200,19 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             )}
           />
         );
+
       case "radio":
         return (
           <Controller
             name={field.id}
             control={control}
+            defaultValue='' // مقدار اولیه خالی
             rules={{ required: field.required ? "این فیلد الزامی است" : false }}
             render={({ field: controllerField, fieldState }) => (
               <Box>
                 <RadioGroup
                   {...controllerField}
+                  value={controllerField.value || ""} // مطمئن شو مقدار همیشه ست بشه
                   onChange={(e) => controllerField.onChange(e.target.value)}
                 >
                   <Typography>{field.label}</Typography>
