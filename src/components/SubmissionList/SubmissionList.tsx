@@ -8,8 +8,7 @@ import {
   TableSortLabel,
   TextField,
 } from "@mui/material";
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
 import ColumnSelector from "./ColumnSelector";
 import { Submission } from "./types";
 
@@ -22,12 +21,22 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
   submissions,
   columns,
 }) => {
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(columns); // پیش‌فرض همه ستون‌ها
+  // پیش‌فرض همه ستون‌ها انتخاب‌شده باشن، مگر اینکه از localStorage چیزی بخونیم
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(() => {
+    const savedColumns = localStorage.getItem("selectedColumns");
+    return savedColumns ? JSON.parse(savedColumns) : columns;
+  });
   const [search, setSearch] = useState("");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>(columns[0] || "");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // ذخیره انتخاب‌ها توی localStorage وقتی selectedColumns تغییر می‌کنه
+  useEffect(() => {
+    localStorage.setItem("selectedColumns", JSON.stringify(selectedColumns));
+    console.log("ستون‌های انتخاب‌شده ذخیره شدند:", selectedColumns);
+  }, [selectedColumns]);
 
   const filteredSubmissions = submissions.filter((submission) =>
     Object.values(submission).some((value) =>
