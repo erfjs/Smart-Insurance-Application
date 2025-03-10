@@ -28,7 +28,7 @@ const FormPage: React.FC = () => {
   useEffect(() => {
     const loadForms = async () => {
       try {
-        const formList = await fetchFormStructure(); // اصلاح‌شده
+        const formList = await fetchFormStructure();
         if (!Array.isArray(formList) || formList.length === 0) {
           throw new Error("هیچ فرمی از API دریافت نشد");
         }

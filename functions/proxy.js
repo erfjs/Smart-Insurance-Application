@@ -1,8 +1,8 @@
 const axios = require("axios");
 
 exports.handler = async (event) => {
-  const path = event.path.replace("/api", "/api"); // مسیر رو نگه می‌داره
-  const apiUrl = `https://assignment.devotel.io${path}`;
+  const path = event.path.replace("/api", "");
+  const apiUrl = `https://assignment.devotel.io/api${path}`;
 
   try {
     const response = await axios.get(apiUrl);
@@ -11,7 +11,7 @@ exports.handler = async (event) => {
       body: JSON.stringify(response.data),
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*", // برای دور زدن CORS
+        "Access-Control-Allow-Origin": "*",
       },
     };
   } catch (error) {

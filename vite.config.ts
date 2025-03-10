@@ -8,7 +8,7 @@ export default defineConfig({
       '/api': {
         target: 'https://assignment.devotel.io',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },
