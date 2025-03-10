@@ -1,28 +1,39 @@
-# Smart-Insurance-Application-Portal
+# Smart Insurance Application Portal
 
+This is a React.js based web application developed as part of the **Frontend Developer Code Assignment** for the Smart Insurance Application Portal. The application allows users to apply for various insurance types (Health, Home, Car, etc.) through dynamic forms fetched from an API, submit applications, and view them in a customizable list view with sorting, filtering, and column selection features.
 
-This project is a React.js web application designed for a Smart Insurance Application Portal. The application allows users to apply for different types of insurance through dynamic forms fetched from an API. It also provides a customizable list view to display submitted insurance applications with sorting, searching, pagination, and column selection features.
+Live Demo: [Deployed on Netlify](https://smart-insurance-application-portal.netlify.app/) 
 
 ## Features
-- **Dynamic Forms**: Forms are fetched from an API and rendered dynamically based on the structure and logic defined in the backend. Fields are conditionally shown or hidden based on user input.
-- **Customizable List View**: Users can view submitted insurance applications with the ability to filter, sort, and select columns. The data is displayed in a table format with pagination.
-- **Validation**: The form data is validated before submission.
-- **API Integration**: The app interacts with the backend to fetch form data, submit applications, and retrieve submitted applications.
 
-## API Endpoints
+### Core Features
+- **Dynamic Forms**: Form structures are fetched from the API (`GET /api/insurance/forms`) and rendered dynamically without hardcoding.
+- **Conditional Logic**: Fields appear/disappear based on user input (e.g., "Security System Type" only shows if "Do you have a security system?" is "Yes").
+- **Nested Fields**: Supports nested sections like Address and Vehicle Details.
+- **Dynamic Options**: Some fields fetch options dynamically from the API (e.g., states based on country).
+- **Form Validation**: Client-side validation ensures required fields are filled and meet specific criteria before submission.
+- **Customizable List View**: Users can view submitted applications (`GET /api/insurance/forms/submissions`) in a table with:
+  - **Column Selection**: Choose which columns to display (saved in `localStorage`).
+  - **Sorting**: Sort columns in ascending/descending order.
+  - **Filtering**: Search across all fields.
+  - **Pagination**: Paginate the results with configurable rows per page.
+- **API Integration**: Handles form submission (`POST /api/insurance/forms/submit`) and data retrieval efficiently.
 
-### Fetch Dynamic Form
-**GET** `/api/insurance/forms`  
-Fetches the dynamic form structure.
+### Bonus Features
+- **Autosave Drafts**: Form data is autosaved in `localStorage` in real-time and loaded when switching between forms.
+- **Dark Mode Toggle**: A theme toggle button switches between light and dark modes using a custom `ThemeContext`.
+- **Localization Support**: Multi-language support (English and Persian) with `react-i18next`.
+- **Drag-and-Drop**: Fields in the form can be reordered using `react-beautiful-dnd`.
 
-### Submit Form Data
-**POST** `/api/insurance/forms/submit`  
-Submits the filled form data to the backend.
-
-### Fetch Submitted Applications
-**GET** `/api/insurance/forms/submissions`  
-Fetches the list of submitted applications.
-
+## Tech Stack
+- **Frontend**: React.js (with Hooks), TypeScript
+- **UI Library**: Material-UI (`@mui/material`)
+- **Form Management**: `react-hook-form`
+- **API Requests**: Axios
+- **Localization**: `react-i18next`
+- **Drag-and-Drop**: `react-beautiful-dnd`
+- **Styling**: CSS-in-JS via Material-UI's `sx` prop
+- **Deployment**: Netlify 
 
 ## **Getting Started**
 
@@ -37,40 +48,3 @@ Install all dependencies using the following command:
    npm run dev
    ```
    
-
-
-API Usage Details
-Fetching the Dynamic Form
-The form structure is fetched from the endpoint /api/insurance/forms. The response contains the structure of the form, including all the fields, conditional logic, and any nested sections.
-
-Submitting the Form
-Once the form is filled out, it can be submitted using a POST request to /api/insurance/forms/submit. The request body should include the filled form data.
-
-Fetching Submitted Applications
-You can retrieve all the submitted applications using a GET request to /api/insurance/forms/submissions. The response will contain a list of applications, which can be displayed in a table format with customizable columns.
-
-Features Implemented
-Dynamic form rendering with conditional fields based on user input.
-Customizable list view for displaying submitted applications with sorting, filtering, and pagination.
-Column selector chooses which columns to display in the list view.
-Responsive design to ensure usability across different devices.
-API integration to fetch form data, submit applications, and fetch submitted applications.
-Assumptions Made
-The backend API endpoints are functional and provide the necessary data (form structure, submitted applications).
-Form validation is performed based on the conditions outlined in the API response.
-The data from the backend is well-structured and contains the necessary fields.
-Bonus Features Implemented
-Autosave drafts before form submission.
-Dark Mode toggle for improved user experience.
-Localization support for multi-language support.
-Deployment
-This application is deployed on (Netlify). You can access the live demo here:
-Live Demo
-
-Technologies Used
-React.js (Functional Components, Hooks)
-Axios for API calls
-Material UI for UI components
-i18next for multi-language
-react-beautiful-dnd for drag and drop
-
